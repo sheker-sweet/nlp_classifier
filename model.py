@@ -17,7 +17,7 @@ from sklearn.metrics import confusion_matrix # add more evaluation tools for the
 
 
 
-# Sentiment analysis 
+# Sentiment analysis pyht
 import nltk
 nltk.download('vader_lexicon')
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
@@ -26,6 +26,6 @@ analyzer = SentimentIntensityAnalyzer()
 
 
 # import yfinance as yf
+y
 
-sp500 = yf.download("^GSPC", start="2021-09-30", end="2022-09-30")
 
