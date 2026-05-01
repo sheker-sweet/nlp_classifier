@@ -115,7 +115,7 @@ print(prices.isnull().sum())
 
 
 
-# confusion_matrix(y, model.predict(X)) --> maybe one for each model 
+# cm = confusion_matrix(y, model.predict(X)) --> maybe one for each model 
 
 # decision tree classifier
 # dt_model = DecisionTreeClassifier()
@@ -126,6 +126,7 @@ print(prices.isnull().sum())
 # knn_model = KNeighborsClassifier(n_neighbors=1) #need to determine the number of neighbors 
 # knn_scores = cross_val_score(knn_model, X, y, cv=tscv, scoring='accuracy')
 
+cm_knn = confusion_matrix(y, knn_model.predict(X))
 
 # feed forward neural network 
 
