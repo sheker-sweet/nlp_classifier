@@ -10,6 +10,8 @@ import seaborn as sns
 
 # Machine Learning
 from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score #we are using timeseriessplit instead of random split to prevent from future data leaking which might result in fake accuracy 
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from keras.models import Sequential
 from keras.layers import Dense, Activation
@@ -78,13 +80,13 @@ print(prices.isnull().sum())
 # X=
 # y=
 
+# timeseries split of the data to preserve the chronology 
+
+# tscv = TimeSeriesSplit(n_splits=5)
 
 # logisitc regression model 
 
-
 # model = LogisticRegression(random_state=0).fit(X, y)
-
-# tscv = TimeSeriesSplit(n_splits=5)
 
 # scores = cross_val_score(model, X, y, cv=tscv, scoring='accuracy')
 
@@ -95,11 +97,13 @@ print(prices.isnull().sum())
 # confusion_matrix(y, model.predict(X)) --> maybe one for each model 
 
 # decision tree classifier
-
+# dt_model = DecisionTreeClassifier()
+# dt_scores = cross_val_score(dt_model, X, y, cv=tscv, scoring='accuracy')
 
 
 # knn classifier 
-
+# knn_model = KNeighborsClassifier(n_neighbors=1) #need to determine the number of neighbors 
+# knn_scores = cross_val_score(knn_model, X, y, cv=tscv, scoring='accuracy')
 
 
 # feed forward neural network 
