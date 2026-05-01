@@ -1,6 +1,8 @@
 # Data handling
 import pandas as pd
 import numpy as np
+import re
+import emoji
 
 # Plotting
 import matplotlib.pyplot as plt
@@ -29,9 +31,28 @@ prices= pd.read_csv('stock_yfinance_data.csv')
 
 
 # pre-process the data 
-    # steps for tweets: 1) handle missing data; 2) pares dates; 4)clean the tweet text; 5) filter for s&p related tweets; 6) apply vader sentiment; 7) aggregate by day 
+def clean_tweet(tweet):
+    text = emoji.demojize(tweet) # convert emojis to text
+    text = text.lower() # convert to lowercase
+    text = re.sub(r'http\S+', '', text) # remove urls
+    text = re.sub(r'@\w+', '', text) # remove mentions
+    text = re.sub(r'#\w+', '', text) # remove hashtags
+    text = re.sub(r'[^\w\s]', '', text) # remove punctuation
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
-    # steps for prices: 1) handle missing dates 2) parse and sort dates; 4) clean the target variable
+    # steps for tweets: 
+    # 1) handle missing data; 
+    # 2) pares dates; 
+    # 4)clean the tweet text; 
+    # 5) filter for s&p related tweets; 
+    # 6) apply vader sentiment; 
+    # 7) aggregate by day 
+
+    # steps for prices: 
+    # 1) handle missing dates 
+    # 2) parse and sort dates; 
+    # 3) clean the target variable
 # merge two datasets
 
 #Check for any missing Values
