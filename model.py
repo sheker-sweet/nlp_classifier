@@ -55,11 +55,14 @@ def clean_tweet(tweet):
 
     # steps for tweets: 
     # 1) handle missing data; 
+    tweets.dropna(subset=['Tweet'], inplace=True)
     # 2) pares dates; 
-    # 4)clean the tweet text; 
-    # 5) filter for s&p related tweets; 
-    # 6) apply vader sentiment; 
-    # 7) aggregate by day 
+    tweets['Date'] = pd.to_datetime(tweets['Date']).dt.date
+    # 3)clean the tweet text; 
+    tweets['clean_tweet'] = tweets['Tweet'].apply(clean_tweet)
+    # 5) apply vader sentiment;
+    
+    # 6) aggregate by day 
 
     # steps for prices: 
     # 1) handle missing dates 
