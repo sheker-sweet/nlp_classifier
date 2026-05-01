@@ -18,11 +18,21 @@ from keras.layers import Dense, Activation
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix # add more evaluation tools for the nlp component
-import nltk
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
 
 # Sentiment analysis
+import nltk
+
+from nltk.corpus import words
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.tokenize import word_tokenize
+
+
+
+nltk.download('words') #not sure if the better way to do is nltk.download('all)
+nltk.download('punkt')
 nltk.download('vader_lexicon')
+
 analyzer = SentimentIntensityAnalyzer()
 
 #import the data 
@@ -77,11 +87,15 @@ print(prices.isnull().sum())
 
 
 
+# sentiment analysis 
+
+
 
 # select the features and target variables from the csv files 
 
 # X=
 # y=
+
 
 # timeseries split of the data to preserve the chronology 
 
@@ -118,6 +132,7 @@ print(prices.isnull().sum())
 # model.compile(optimizer='sgd',
 #               loss='mse',
 #               metrics=['accuracy']) #optimizer, loss and metrics can be decided 
+
 
 # evaluation: 5-fold cross validation, f-1 score, accuracy, precision, recall, confusion matrix
 
