@@ -133,6 +133,10 @@ print(prices.isnull().sum())
 
 # evaluation: 5-fold cross validation, f-1 score, accuracy, precision, recall, confusion matrix
 
+
+
+
+
 # instead of 5 fold-cross validation, use timeseries cross validation b/c accounts for data chronology and prevents future data from leaking into the existing dataset 
 
 
