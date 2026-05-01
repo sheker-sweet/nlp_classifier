@@ -53,6 +53,7 @@ print(prices.isnull().sum())
 
 
 # select the features and target variables from the csv files 
+
 # X=
 # y=
 
@@ -75,7 +76,9 @@ print(prices.isnull().sum())
 # decision tree classifier
 
 
+
 # knn classifier 
+
 
 
 # feed forward neural network 
