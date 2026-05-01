@@ -61,8 +61,12 @@ def clean_tweet(tweet):
     # 3)clean the tweet text; 
     tweets['clean_tweet'] = tweets['Tweet'].apply(clean_tweet)
     # 5) apply vader sentiment;
-    
+    tweets['vader_score'] = tweets['clean_tweet'].apply(
+        lambda t: analyzer.polarity_scores(t)['compound']
+    )
     # 6) aggregate by day 
+    daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index()
+    daily_sentiment.columns = ['Date', 'avg_sentiment']
 
     # steps for prices: 
     # 1) handle missing dates 
