@@ -69,9 +69,13 @@ def clean_tweet(tweet):
     daily_sentiment.columns = ['Date', 'avg_sentiment']
 
     # steps for prices: 
-    # 1) handle missing dates 
-    # 2) parse and sort dates; 
-    # 3) clean the target variable
+    # 1) parse + sort dates
+    prices['Date'] = pd.to_datetime(prices['Date']).dt.date
+    prices.sort_values('Date', inplace=True)
+    # 3) create direction label (1 = price up, 0 = price down)
+    prices['direction'] = (prices['Close'] > prices['Close'].shift(1)).astype(int)
+    prices.dropna(inplace=True)
+
 # merge two datasets
 
 #Check for any missing Values
