@@ -77,8 +77,12 @@ def clean_tweet(tweet):
     prices.dropna(inplace=True)
 
 # merge two datasets
+merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date')
+merged.sort_values('Date', inplace=True)  # keep chronological order
 
-#Check for any missing Values
+X = merged[['avg_sentiment']]
+y = merged['direction']
+
 
 print(tweets.columns)
 print(tweets.dtypes)
