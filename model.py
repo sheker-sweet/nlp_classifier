@@ -53,25 +53,25 @@ def clean_tweet(tweet):
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
-    # steps for tweets: 
-    # 1) handle missing data; 
-    tweets.dropna(subset=['Tweet'], inplace=True)
-    # 2) pares dates; 
-    tweets['Date'] = pd.to_datetime(tweets['Date']).dt.date
-    # 3)clean the tweet text; 
-    tweets['clean_tweet'] = tweets['Tweet'].apply(clean_tweet)
-    # 5) apply vader sentiment;
-    tweets['vader_score'] = tweets['clean_tweet'].apply(
-        lambda t: analyzer.polarity_scores(t)['compound']
-    )
-    # 6) aggregate by day 
-    daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index()
-    daily_sentiment.columns = ['Date', 'avg_sentiment']
+# steps for tweets: 
+# 1) handle missing data; 
+tweets.dropna(subset=['Tweet'], inplace=True)
+# 2) pares dates; 
+tweets['Date'] = pd.to_datetime(tweets['Date']).dt.date
+# 3)clean the tweet text; 
+tweets['clean_tweet'] = tweets['Tweet'].apply(clean_tweet)
+# 5) apply vader sentiment;
+tweets['vader_score'] = tweets['clean_tweet'].apply(
+    lambda t: analyzer.polarity_scores(t)['compound']
+)
+# 6) aggregate by day 
+daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index()
+daily_sentiment.columns = ['Date', 'avg_sentiment']
 
-    # steps for prices: 
-    # 1) handle missing dates 
-    # 2) parse and sort dates; 
-    # 3) clean the target variable
+# steps for prices: 
+# 1) handle missing dates 
+# 2) parse and sort dates; 
+# 3) clean the target variable
 # merge two datasets
 
 #Check for any missing Values
@@ -126,7 +126,7 @@ print(prices.isnull().sum())
 # knn_model = KNeighborsClassifier(n_neighbors=1) #need to determine the number of neighbors 
 # knn_scores = cross_val_score(knn_model, X, y, cv=tscv, scoring='accuracy')
 
-cm_knn = confusion_matrix(y, knn_model.predict(X))
+# add 
 
 # feed forward neural network 
 
