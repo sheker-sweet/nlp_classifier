@@ -53,28 +53,28 @@ def clean_tweet(tweet):
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
-    # steps for tweets: 
-    # 1) handle missing data; 
-    tweets.dropna(subset=['Tweet'], inplace=True)
-    # 2) pares dates; 
-    tweets['Date'] = pd.to_datetime(tweets['Date']).dt.date
-    # 3)clean the tweet text; 
-    tweets['clean_tweet'] = tweets['Tweet'].apply(clean_tweet)
-    # 5) apply vader sentiment;
-    tweets['vader_score'] = tweets['clean_tweet'].apply(
-        lambda t: analyzer.polarity_scores(t)['compound']
-    )
-    # 6) aggregate by day 
-    daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index()
-    daily_sentiment.columns = ['Date', 'avg_sentiment']
+# steps for tweets: 
+# 1) handle missing data; 
+tweets.dropna(subset=['Tweet'], inplace=True)
+# 2) pares dates; 
+tweets['Date'] = pd.to_datetime(tweets['Date']).dt.date
+# 3)clean the tweet text; 
+tweets['clean_tweet'] = tweets['Tweet'].apply(clean_tweet)
+# 5) apply vader sentiment;
+tweets['vader_score'] = tweets['clean_tweet'].apply(
+    lambda t: analyzer.polarity_scores(t)['compound']
+)
+# 6) aggregate by day 
+daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index()
+daily_sentiment.columns = ['Date', 'avg_sentiment']
 
-    # steps for prices: 
-    # 1) parse + sort dates
-    prices['Date'] = pd.to_datetime(prices['Date']).dt.date
-    prices.sort_values('Date', inplace=True)
-    # 3) create direction label (1 = price up, 0 = price down)
-    prices['direction'] = (prices['Close'] > prices['Close'].shift(1)).astype(int)
-    prices.dropna(inplace=True)
+# steps for prices: 
+# 1) parse + sort dates
+prices['Date'] = pd.to_datetime(prices['Date']).dt.date
+prices.sort_values('Date', inplace=True)
+# 3) create direction label (1 = price up, 0 = price down)
+prices['direction'] = (prices['Close'] > prices['Close'].shift(1)).astype(int)
+prices.dropna(inplace=True)
 
 # merge two datasets
 merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date')
