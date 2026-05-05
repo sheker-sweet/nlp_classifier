@@ -68,6 +68,11 @@ tweets['vader_score'] = tweets['clean_tweet'].apply(
 daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index()
 daily_sentiment.columns = ['Date', 'avg_sentiment']
 
+# TEST FOR PRE-PROCESSED TWEETS
+print("=== TWEETS ===")
+print(daily_sentiment.head(10))
+print(f"Sentiment range: {daily_sentiment['avg_sentiment'].min():.2f} to {daily_sentiment['avg_sentiment'].max():.2f}")
+
 # steps for prices: 
 # 1) parse + sort dates
 prices['Date'] = pd.to_datetime(prices['Date']).dt.date
@@ -85,17 +90,6 @@ merged.sort_values('Date', inplace=True)  # keep chronological order
 X = merged[['avg_sentiment']]
 y = merged['direction']
 
-
-print(tweets.columns)
-print(tweets.dtypes)
-print(prices.columns)
-print(prices.dtypes)
-
-print("Missing values in tweets:")
-print(tweets.isnull().sum())
-
-print("\nMissing values in prices:")
-print(prices.isnull().sum())
 
 # timeseries split of the data to preserve the chronology 
 
