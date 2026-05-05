@@ -80,6 +80,8 @@ prices.dropna(inplace=True)
 merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date')
 merged.sort_values('Date', inplace=True)  # keep chronological order
 
+# select the features and target variables from the csv files 
+
 X = merged[['avg_sentiment']]
 y = merged['direction']
 
@@ -94,20 +96,6 @@ print(tweets.isnull().sum())
 
 print("\nMissing values in prices:")
 print(prices.isnull().sum())
-
-
-
-
-
-# sentiment analysis 
-
-
-
-# select the features and target variables from the csv files 
-
-# X=
-# y=
-
 
 # timeseries split of the data to preserve the chronology 
 
@@ -134,7 +122,7 @@ print(prices.isnull().sum())
 # knn_model = KNeighborsClassifier(n_neighbors=1) #need to determine the number of neighbors 
 # knn_scores = cross_val_score(knn_model, X, y, cv=tscv, scoring='accuracy')
 
-cm_knn = confusion_matrix(y, knn_model.predict(X))
+# cm_knn = confusion_matrix(y, knn_model.predict(X))
 
 # feed forward neural network 
 
