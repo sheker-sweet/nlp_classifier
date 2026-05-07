@@ -17,7 +17,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score, classification_report
 
 
 # Sentiment analysis
@@ -194,6 +194,40 @@ for train_idx, test_idx in tscv.split(X):
 print("CV mean accuracy:", np.mean(scores))
 print('CV standard deviation', np.std(scores))
 
+# split
+split_idx = int(len(X) * 0.8)
+
+X_train = X.iloc[:split_idx]
+X_test  = X.iloc[split_idx:]
+y_train = y.iloc[:split_idx]
+y_test  = y.iloc[split_idx:]
+
+# scale (fit ONLY on train)
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# model
+model = LogisticRegression(random_state=0, max_iter=1000)
+model.fit(X_train_scaled, y_train)
+
+# evaluate on TRUE test set
+preds = model.predict(X_test_scaled)
+score = accuracy_score(y_test, preds)
+
+print("Final test accuracy:", score)
+
+print(accuracy_score(y_test, preds))
+print(precision_score(y_test, preds, average='binary'))
+print(recall_score(y_test, preds, average='binary'))
+print(f1_score(y_test, preds, average='binary'))
+
+print(classification_report(y_test, preds))
+
+# print("CV Accuracy:", np.mean(accuracies))
+# print("CV Precision:", np.mean(precisions))
+# print("CV Recall:", np.mean(recalls))
+# print("CV F1:", np.mean(f1s))
 
 
 
@@ -212,11 +246,99 @@ print('CV standard deviation', np.std(scores))
 
 
 # cm = confusion_matrix(y, model.predict(X)) --> maybe one for each model 
+# =========================
+# DECISION TREE
+# =========================
+
+dt_scores = []
+
+for train_idx, test_idx in tscv.split(X):
+
+    X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
+    y_train, y_val = y.iloc[train_idx], y.iloc[test_idx]
+
+    # NO SCALING needed
+    dt = DecisionTreeClassifier(random_state=0)
+    dt.fit(X_train, y_train)
+
+    preds = dt.predict(X_val)
+    dt_scores.append(accuracy_score(y_val, preds))
+
+print("Decision Tree CV accuracy:", np.mean(dt_scores))
+
+# scale (fit ONLY on train)
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# model
+model = DecisionTreeClassifier(random_state=0)
+model.fit(X_train_scaled, y_train)
+
+# evaluate on TRUE test set
+preds = model.predict(X_test_scaled)
+score = accuracy_score(y_test, preds)
+
+print("Final test accuracy:", score)
+
+print(accuracy_score(y_test, preds))
+print(precision_score(y_test, preds, average='binary'))
+print(recall_score(y_test, preds, average='binary'))
+print(f1_score(y_test, preds, average='binary'))
+
+print(classification_report(y_test, preds))
 
 # decision tree classifier
 # dt_model = DecisionTreeClassifier()
 # dt_scores = cross_val_score(dt_model, X, y, cv=tscv, scoring='accuracy')
 
+
+# =========================
+# KNN
+# =========================
+
+knn_scores = []
+
+for train_idx, test_idx in tscv.split(X):
+
+    X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
+    y_train, y_val = y.iloc[train_idx], y.iloc[test_idx]
+
+    # SCALE (critical for KNN)
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_val_scaled = scaler.transform(X_val)
+
+    # KNN model
+    knn = KNeighborsClassifier(n_neighbors=5)
+    knn.fit(X_train_scaled, y_train)
+
+    preds = knn.predict(X_val_scaled)
+    knn_scores.append(accuracy_score(y_val, preds))
+
+print("KNN CV accuracy:", np.mean(scores))
+
+
+# scale (fit ONLY on train)
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# model
+model = KNeighborsClassifier(n_neighbors=5)
+model.fit(X_train_scaled, y_train)
+
+# evaluate on TRUE test set
+preds = model.predict(X_test_scaled)
+score = accuracy_score(y_test, preds)
+
+print("Final test accuracy:", score)
+
+print(accuracy_score(y_test, preds))
+print(precision_score(y_test, preds, average='binary'))
+print(recall_score(y_test, preds, average='binary'))
+print(f1_score(y_test, preds, average='binary'))
+
+print(classification_report(y_test, preds))
 
 # knn classifier 
 # knn_model = KNeighborsClassifier(n_neighbors=1) #need to determine the number of neighbors 
