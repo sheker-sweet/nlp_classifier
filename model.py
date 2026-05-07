@@ -65,7 +65,8 @@ tweets['vader_score'] = tweets['clean_tweet'].apply(
     lambda t: analyzer.polarity_scores(t)['compound']
 )
 # 6) aggregate by day 
-# daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index()
+
+# daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index() #will decide later what to do with this
 # daily_sentiment.columns = ['Date', 'avg_sentiment']
 
 daily_sentiment = tweets.groupby('Date').agg(
@@ -76,19 +77,42 @@ daily_sentiment = tweets.groupby('Date').agg(
    tweet_count   = ('compound', 'count')
 ).reset_index()
 
+#_____________________________________________________________________________________________________________________________
 # TEST FOR PRE-PROCESSED TWEETS
 print("TWEETS:")
 print(daily_sentiment.head(10))
 print(f"Sentiment range: {daily_sentiment['avg_sentiment'].min():.2f} to {daily_sentiment['avg_sentiment'].max():.2f}")
 #_____________________________________________________________________________________________________________________________
+
+
+
+#______________________________________________________________________________________________________________________________
+# PRE-PROCESSING STEPS FOR PRICES:
+
 # steps for prices: 
 # 1) parse + sort dates
+# prices['Date'] = pd.to_datetime(prices['Date']).dt.date
+# prices.sort_values('Date', inplace=True)
+# # 3) create direction label (1 = price up, 0 = price down)
+# prices['direction'] = (prices['Close'] > prices['Close'].shift(1)).astype(int)
+# prices.dropna(inplace=True)
+
+if 'Date_' in prices.columns:
+   prices = prices.rename(columns={'Date_': 'Date'})
+if 'Close_SPY' in prices.columns:
+   prices = prices.rename(columns={'Close_SPY': 'Close'})
+
+
+prices.dropna(subset=['Date', 'Close'], inplace=True)
 prices['Date'] = pd.to_datetime(prices['Date']).dt.date
 prices.sort_values('Date', inplace=True)
 # 3) create direction label (1 = price up, 0 = price down)
-prices['direction'] = (prices['Close'] > prices['Close'].shift(1)).astype(int)
-prices.dropna(inplace=True)
+prices['direction'] = (prices['Close'].shift(-1) > prices['Close']).astype(int)
+prices = prices.iloc[:-1].copy()  # drop last row (no next-day label)
+
+#_____________________________________________________________________________________________________________________________
 # TEST FOR PRE-PROCESSED PRICES
+
 print("\nPRICES:")
 print(prices[['Date', 'Close', 'direction']].head(10))
 print(f"Direction counts (0=down, 1=up):\n{prices['direction'].value_counts()}")
@@ -97,12 +121,18 @@ print(f"Direction counts (0=down, 1=up):\n{prices['direction'].value_counts()}")
 
 
 # merge two datasets
-merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date')
-merged.sort_values('Date', inplace=True)  # keep chronological order
+# merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date')
+# merged.sort_values('Date', inplace=True)  # keep chronological order
+
+merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date', how='inner')
+merged.sort_values('Date', inplace=True)
+merged.reset_index(drop=True, inplace=True)
+
+print(f"Merged rows:  {len(merged)}")
 
 # select the features and target variables from the csv files 
 
-X = merged[['avg_sentiment']]
+X = merged[['avg_sentiment', 'avg_positive', 'avg_negative', 'avg_neutral', 'tweet_count']]
 y = merged['direction']
 
 
