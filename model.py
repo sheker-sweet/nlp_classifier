@@ -40,9 +40,9 @@ tweets = pd.read_csv('stock_tweets.csv')
 spy = pd.read_csv('spy_prices.csv')
 prices = spy.copy() # not sure if I need to make a copy here or not
 
-
-#______________________________________________________________________________________________________________________________
-# PRE-PROCESSING STEPS FOR TWEETS:
+# ===============================
+# DATA PRE-PROCESSING FOR TWEETS:
+# ==============================
 def clean_tweet(tweet):
     text = emoji.demojize(tweet)
     text = text.lower()
@@ -77,17 +77,18 @@ daily_sentiment = tweets.groupby('Date').agg(
    tweet_count   = ('compound', 'count')
 ).reset_index()
 
-#_____________________________________________________________________________________________________________________________
+
 # TEST FOR PRE-PROCESSED TWEETS
 print("TWEETS:")
 print(daily_sentiment.head(10))
 print(f"Sentiment range: {daily_sentiment['avg_sentiment'].min():.2f} to {daily_sentiment['avg_sentiment'].max():.2f}")
-#_____________________________________________________________________________________________________________________________
 
 
 
-#______________________________________________________________________________________________________________________________
+
+# ================================
 # PRE-PROCESSING STEPS FOR PRICES:
+# ================================
 
 # steps for prices: 
 # 1) parse + sort dates
@@ -110,7 +111,7 @@ prices.sort_values('Date', inplace=True)
 prices['direction'] = (prices['Close'].shift(-1) > prices['Close']).astype(int)
 prices = prices.iloc[:-1].copy()  # drop last row (no next-day label)
 
-#_____________________________________________________________________________________________________________________________
+
 # TEST FOR PRE-PROCESSED PRICES
 
 print("\nPRICES:")
@@ -120,9 +121,15 @@ print(f"Direction counts (0=down, 1=up):\n{prices['direction'].value_counts()}")
 
 
 
+# MERGING DATASETS:
+
+
+
 # merge two datasets
 # merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date')
 # merged.sort_values('Date', inplace=True)  # keep chronological order
+
+
 
 merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date', how='inner')
 merged.sort_values('Date', inplace=True)
@@ -130,10 +137,21 @@ merged.reset_index(drop=True, inplace=True)
 
 print(f"Merged rows:  {len(merged)}")
 
+
+
+# SELECTING FEATURES AND TARGET VARIABLES
+
 # select the features and target variables from the csv files 
 
 X = merged[['avg_sentiment', 'avg_positive', 'avg_negative', 'avg_neutral', 'tweet_count']]
 y = merged['direction']
+
+
+# =========================
+# LOGISTIC REGRESSION
+# =========================
+
+
 
 
 # timeseries split of the data to preserve the chronology 
