@@ -17,7 +17,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix # add more evaluation tools for the nlp component
+from sklearn.metrics import confusion_matrix, accuracy_score
 
 
 # Sentiment analysis
@@ -61,9 +61,19 @@ tweets['Date'] = pd.to_datetime(tweets['Date']).dt.date
 # 3)clean the tweet text; 
 tweets['clean_tweet'] = tweets['Tweet'].apply(clean_tweet)
 # 5) apply vader sentiment;
-tweets['vader_score'] = tweets['clean_tweet'].apply(
-    lambda t: analyzer.polarity_scores(t)['compound']
+tweets['compound'] = tweets['clean_tweet'].apply(
+   lambda t: analyzer.polarity_scores(t)['compound']
+)   
+tweets['positive'] = tweets['clean_tweet'].apply(
+   lambda t: analyzer.polarity_scores(t)['pos']
 )
+tweets['negative'] = tweets['clean_tweet'].apply(
+   lambda t: analyzer.polarity_scores(t)['neg']
+)
+tweets['neutral'] = tweets['clean_tweet'].apply(
+   lambda t: analyzer.polarity_scores(t)['neu']
+)
+
 # 6) aggregate by day 
 
 # daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index() #will decide later what to do with this
@@ -151,12 +161,45 @@ y = merged['direction']
 # LOGISTIC REGRESSION
 # =========================
 
+scaler = StandardScaler()
+tscv = TimeSeriesSplit(n_splits=5)
+
+# for train_idx, test_idx in tscv.split(X):
+
+#     X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
+#     y_train, y_val = y.iloc[train_idx], y.iloc[test_idx]
+
+scores = []
+
+for train_idx, test_idx in tscv.split(X):
+
+    # split data
+    X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
+    y_train, y_val = y.iloc[train_idx], y.iloc[test_idx]
+
+    # scale (fit ONLY on train fold)
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_val_scaled = scaler.transform(X_val)
+
+    # model
+    model = LogisticRegression(random_state=0, max_iter=1000)
+    model.fit(X_train_scaled, y_train)
+
+    # evaluate
+    preds = model.predict(X_val_scaled)
+    score = accuracy_score(y_val, preds)
+
+    scores.append(score)
+
+print("CV mean accuracy:", np.mean(scores))
+print('CV standard deviation', np.std(scores))
+
 
 
 
 # timeseries split of the data to preserve the chronology 
 
-# tscv = TimeSeriesSplit(n_splits=5)
+
 
 # logisitc regression model 
 
