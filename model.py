@@ -65,8 +65,16 @@ tweets['vader_score'] = tweets['clean_tweet'].apply(
     lambda t: analyzer.polarity_scores(t)['compound']
 )
 # 6) aggregate by day 
-daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index()
-daily_sentiment.columns = ['Date', 'avg_sentiment']
+# daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index()
+# daily_sentiment.columns = ['Date', 'avg_sentiment']
+
+daily_sentiment = tweets.groupby('Date').agg(
+   avg_sentiment = ('compound', 'mean'),
+   avg_positive  = ('positive', 'mean'),
+   avg_negative  = ('negative', 'mean'),
+   avg_neutral   = ('neutral',  'mean'),
+   tweet_count   = ('compound', 'count')
+).reset_index()
 
 # TEST FOR PRE-PROCESSED TWEETS
 print("TWEETS:")
@@ -84,6 +92,9 @@ prices.dropna(inplace=True)
 print("\nPRICES:")
 print(prices[['Date', 'Close', 'direction']].head(10))
 print(f"Direction counts (0=down, 1=up):\n{prices['direction'].value_counts()}")
+
+
+
 
 # merge two datasets
 merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date')
