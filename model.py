@@ -22,7 +22,6 @@ from sklearn.metrics import confusion_matrix # add more evaluation tools for the
 
 # Sentiment analysis
 import nltk
-
 from nltk.corpus import words
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.tokenize import word_tokenize
@@ -38,7 +37,9 @@ analyzer = SentimentIntensityAnalyzer()
 #import the data 
 
 tweets = pd.read_csv('stock_tweets.csv')
-prices= pd.read_csv('stock_yfinance_data.csv')
+spy = pd.read_csv('spy_prices.csv')
+prices = spy.copy() # not sure if I need to make a copy here or not
+
 
 #______________________________________________________________________________________________________________________________
 # PRE-PROCESSING STEPS FOR TWEETS:
