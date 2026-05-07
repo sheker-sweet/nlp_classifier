@@ -40,23 +40,22 @@ analyzer = SentimentIntensityAnalyzer()
 tweets = pd.read_csv('stock_tweets.csv')
 prices= pd.read_csv('stock_yfinance_data.csv')
 
-
-
-# pre-process the data 
+#______________________________________________________________________________________________________________________________
+# PRE-PROCESSING STEPS FOR TWEETS:
 def clean_tweet(tweet):
-    text = emoji.demojize(tweet) # convert emojis to text
-    text = text.lower() # convert to lowercase
-    text = re.sub(r'http\S+', '', text) # remove urls
-    text = re.sub(r'@\w+', '', text) # remove mentions
-    text = re.sub(r'#\w+', '', text) # remove hashtags
-    text = re.sub(r'[^\w\s]', '', text) # remove punctuation
+    text = emoji.demojize(tweet)
+    text = text.lower()
+    text = re.sub(r'http\S+', '', text)
+    text = re.sub(r'@\w+', '', text)
+    text = re.sub(r'#\w+', '', text)
+    text = re.sub(r'[^\w\s]', '', text)
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
 # steps for tweets: 
 # 1) handle missing data; 
 tweets.dropna(subset=['Tweet'], inplace=True)
-# 2) pares dates; 
+# 2) parse dates; 
 tweets['Date'] = pd.to_datetime(tweets['Date']).dt.date
 # 3)clean the tweet text; 
 tweets['clean_tweet'] = tweets['Tweet'].apply(clean_tweet)
@@ -68,6 +67,11 @@ tweets['vader_score'] = tweets['clean_tweet'].apply(
 daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index()
 daily_sentiment.columns = ['Date', 'avg_sentiment']
 
+# TEST FOR PRE-PROCESSED TWEETS
+print("TWEETS:")
+print(daily_sentiment.head(10))
+print(f"Sentiment range: {daily_sentiment['avg_sentiment'].min():.2f} to {daily_sentiment['avg_sentiment'].max():.2f}")
+#_____________________________________________________________________________________________________________________________
 # steps for prices: 
 # 1) parse + sort dates
 prices['Date'] = pd.to_datetime(prices['Date']).dt.date
@@ -75,6 +79,10 @@ prices.sort_values('Date', inplace=True)
 # 3) create direction label (1 = price up, 0 = price down)
 prices['direction'] = (prices['Close'] > prices['Close'].shift(1)).astype(int)
 prices.dropna(inplace=True)
+# TEST FOR PRE-PROCESSED PRICES
+print("\nPRICES:")
+print(prices[['Date', 'Close', 'direction']].head(10))
+print(f"Direction counts (0=down, 1=up):\n{prices['direction'].value_counts()}")
 
 # merge two datasets
 merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date')
@@ -85,17 +93,6 @@ merged.sort_values('Date', inplace=True)  # keep chronological order
 X = merged[['avg_sentiment']]
 y = merged['direction']
 
-
-print(tweets.columns)
-print(tweets.dtypes)
-print(prices.columns)
-print(prices.dtypes)
-
-print("Missing values in tweets:")
-print(tweets.isnull().sum())
-
-print("\nMissing values in prices:")
-print(prices.isnull().sum())
 
 # timeseries split of the data to preserve the chronology 
 
