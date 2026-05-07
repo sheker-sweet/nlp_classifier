@@ -29,9 +29,9 @@ from nltk.tokenize import word_tokenize
 
 
 
-nltk.download('words') #not sure if the better way to do is nltk.download('all)
-nltk.download('punkt')
-nltk.download('vader_lexicon')
+nltk.download('words', quiet = True) #not sure if the better way to do is nltk.download('all)
+nltk.download('punkt', quiet = True)
+nltk.download('vader_lexicon', quiet = True)
 
 analyzer = SentimentIntensityAnalyzer()
 
