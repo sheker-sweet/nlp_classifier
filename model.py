@@ -315,7 +315,7 @@ for train_idx, test_idx in tscv.split(X):
     preds = knn.predict(X_val_scaled)
     knn_scores.append(accuracy_score(y_val, preds))
 
-print("KNN CV accuracy:", np.mean(scores))
+print("KNN CV accuracy:", np.mean(knn_scores))
 
 
 # scale (fit ONLY on train)
@@ -356,6 +356,87 @@ print(classification_report(y_test, preds))
 #               loss='mse',
 #               metrics=['accuracy']) #optimizer, loss and metrics can be decided 
 
+# =========================
+# NEURAL NETWORK 
+# =========================
+
+# build the model 
+
+nn_scores = []
+
+for train_idx, test_idx in tscv.split(X):
+
+    X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
+    y_train, y_val = y.iloc[train_idx], y.iloc[test_idx]
+
+    # SCALE (critical for KNN)
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_val_scaled = scaler.transform(X_val)
+
+    # BUILD FRESH MODEL EACH FOLD
+    model1 = Sequential([
+        Dense(32, activation='relu', input_shape=(X_train_scaled.shape[1],)),
+        Dense(16, activation='relu'),
+        Dense(1, activation='sigmoid')
+    ])
+
+    model1.compile(
+        optimizer='adam'(learning_rate=0.001),
+        loss='binary_crossentropy',
+        metrics=['accuracy']
+    )
+
+    # train
+    model1.fit(
+        X_train_scaled,
+        y_train,
+        epochs=20,
+        batch_size=16,
+        verbose=0
+    )
+
+    # predict probabilities
+    probs = model.predict(X_val_scaled, verbose=0)
+
+    # convert probabilities to 0/1
+    preds = (probs > 0.5).astype(int).flatten()
+
+    preds = model1.predict(X_val_scaled)
+    nn_scores.append(accuracy_score(y_val, preds))
+
+print("NN CV accuracy:", np.mean(nn_scores))
+
+# build a second model 
+
+model2 = Sequential([
+        Dense(32, activation='relu', input_shape=(X_train_scaled.shape[1],)),
+        Dense(16, activation='relu'),
+        Dense(1, activation='sigmoid')
+    ])
+
+model2.compile(
+        optimizer='adam'(learning_rate=0.001), #i could increase the learning rate
+        loss='binary_crossentropy',
+        metrics=['accuracy']
+    )
+model2.fit(
+        X_train_scaled,
+        y_train,
+        epochs=20,
+        batch_size=16,
+        verbose=0
+    )
+
+probs = model2.predict(X_val_scaled, verbose=0)
+
+preds = (probs > 0.5).astype(int)
+
+print(accuracy_score(y_test, preds))
+print(precision_score(y_test, preds, average='binary'))
+print(recall_score(y_test, preds, average='binary'))
+print(f1_score(y_test, preds, average='binary'))
+
+print(classification_report(y_test, preds))
 
 # evaluation: 5-fold cross validation, f-1 score, accuracy, precision, recall, confusion matrix
 
