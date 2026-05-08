@@ -19,23 +19,19 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score, classification_report
 
-
 # Sentiment analysis
 import nltk
 from nltk.corpus import words
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.tokenize import word_tokenize
 
-
-
-nltk.download('words', quiet = True) #not sure if the better way to do is nltk.download('all)
+nltk.download('words', quiet = True) 
 nltk.download('punkt', quiet = True)
 nltk.download('vader_lexicon', quiet = True)
 
 analyzer = SentimentIntensityAnalyzer()
 
 #import the data 
-
 tweets = pd.read_csv('stock_tweets.csv')
 spy = pd.read_csv('spy_prices.csv')
 prices = spy.copy() # not sure if I need to make a copy here or not
@@ -74,11 +70,7 @@ tweets['neutral'] = tweets['clean_tweet'].apply(
    lambda t: analyzer.polarity_scores(t)['neu']
 )
 
-# 6) aggregate by day 
-
-# daily_sentiment = tweets.groupby('Date')['vader_score'].mean().reset_index() #will decide later what to do with this
-# daily_sentiment.columns = ['Date', 'avg_sentiment']
-
+# Aggregate by day 
 daily_sentiment = tweets.groupby('Date').agg(
    avg_sentiment = ('compound', 'mean'),
    avg_positive  = ('positive', 'mean'),
@@ -87,14 +79,10 @@ daily_sentiment = tweets.groupby('Date').agg(
    tweet_count   = ('compound', 'count')
 ).reset_index()
 
-
 # TEST FOR PRE-PROCESSED TWEETS
-print("TWEETS:")
-print(daily_sentiment.head(10))
-print(f"Sentiment range: {daily_sentiment['avg_sentiment'].min():.2f} to {daily_sentiment['avg_sentiment'].max():.2f}")
-
-
-
+# print("TWEETS:")
+# print(daily_sentiment.head(10))
+# print(f"Sentiment range: {daily_sentiment['avg_sentiment'].min():.2f} to {daily_sentiment['avg_sentiment'].max():.2f}")
 
 # ================================
 # PRE-PROCESSING STEPS FOR PRICES:
@@ -113,7 +101,6 @@ if 'Date_' in prices.columns:
 if 'Close_SPY' in prices.columns:
    prices = prices.rename(columns={'Close_SPY': 'Close'})
 
-
 prices.dropna(subset=['Date', 'Close'], inplace=True)
 prices['Date'] = pd.to_datetime(prices['Date']).dt.date
 prices.sort_values('Date', inplace=True)
@@ -121,38 +108,21 @@ prices.sort_values('Date', inplace=True)
 prices['direction'] = (prices['Close'].shift(-1) > prices['Close']).astype(int)
 prices = prices.iloc[:-1].copy()  # drop last row (no next-day label)
 
-
+#===============================================================
 # TEST FOR PRE-PROCESSED PRICES
-
-print("\nPRICES:")
-print(prices[['Date', 'Close', 'direction']].head(10))
-print(f"Direction counts (0=down, 1=up):\n{prices['direction'].value_counts()}")
-
-
-
+# print("\nPRICES:")
+# print(prices[['Date', 'Close', 'direction']].head(10))
+# print(f"Direction counts (0=down, 1=up):\n{prices['direction'].value_counts()}")
 
 # MERGING DATASETS:
-
-
-
-# merge two datasets
-# merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date')
-# merged.sort_values('Date', inplace=True)  # keep chronological order
-
-
-
 merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date', how='inner')
-merged.sort_values('Date', inplace=True)
+merged.sort_values('Date', inplace=True) # keep chronological order
 merged.reset_index(drop=True, inplace=True)
 
-print(f"Merged rows:  {len(merged)}")
-
-
+#print(f"Merged rows:  {len(merged)}")
 
 # SELECTING FEATURES AND TARGET VARIABLES
-
 # select the features and target variables from the csv files 
-
 X = merged[['avg_sentiment', 'avg_positive', 'avg_negative', 'avg_neutral', 'tweet_count']]
 y = merged['direction']
 
@@ -160,17 +130,14 @@ y = merged['direction']
 # =========================
 # LOGISTIC REGRESSION
 # =========================
-
 scaler = StandardScaler()
 tscv = TimeSeriesSplit(n_splits=5)
 
 # for train_idx, test_idx in tscv.split(X):
-
 #     X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
 #     y_train, y_val = y.iloc[train_idx], y.iloc[test_idx]
 
 scores = []
-
 for train_idx, test_idx in tscv.split(X):
 
     # split data
@@ -196,14 +163,12 @@ print('CV standard deviation', np.std(scores))
 
 # split
 split_idx = int(len(X) * 0.8)
-
 X_train = X.iloc[:split_idx]
 X_test  = X.iloc[split_idx:]
 y_train = y.iloc[:split_idx]
 y_test  = y.iloc[split_idx:]
 
 # scale (fit ONLY on train)
-
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
@@ -216,7 +181,6 @@ preds = model.predict(X_test_scaled)
 score = accuracy_score(y_test, preds)
 
 print("Final test accuracy:", score)
-
 print(accuracy_score(y_test, preds))
 print(precision_score(y_test, preds, average='binary'))
 print(recall_score(y_test, preds, average='binary'))
@@ -230,9 +194,7 @@ print(classification_report(y_test, preds))
 # print("CV F1:", np.mean(f1s))
 
 
-
 # timeseries split of the data to preserve the chronology 
-
 
 
 # logisitc regression model 
@@ -244,14 +206,11 @@ print(classification_report(y_test, preds))
 # print(scores.std()) #low value --> model is consistent; high-value--> model is inconsistent
 
 
-
 # cm = confusion_matrix(y, model.predict(X)) --> maybe one for each model 
 # =========================
 # DECISION TREE
 # =========================
-
 dt_scores = []
-
 for train_idx, test_idx in tscv.split(X):
 
     X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
@@ -267,7 +226,6 @@ for train_idx, test_idx in tscv.split(X):
 print("Decision Tree CV accuracy:", np.mean(dt_scores))
 
 # scale (fit ONLY on train)
-
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
