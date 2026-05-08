@@ -13,11 +13,12 @@ from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
-from keras.models import Sequential
-from keras.layers import Dense, Activation
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score, classification_report
+from keras.models import Sequential
+from keras.layers import Dense, Activation
+from tensorflow.keras.optimizers import Adam
 
 # Sentiment analysis
 import nltk
@@ -137,7 +138,12 @@ tscv = TimeSeriesSplit(n_splits=5)
 #     X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
 #     y_train, y_val = y.iloc[train_idx], y.iloc[test_idx]
 
-scores = []
+
+lr_precisions = []
+lr_recalls = []
+lr_f1s = []
+lr_accuracies = []
+
 for train_idx, test_idx in tscv.split(X):
 
     # split data
@@ -154,14 +160,19 @@ for train_idx, test_idx in tscv.split(X):
 
     # evaluate
     preds = model.predict(X_val_scaled)
-    score = accuracy_score(y_val, preds)
 
-    scores.append(score)
+    lr_accuracies.append(accuracy_score(y_val, preds))
+    lr_precisions.append(precision_score(y_val, preds))
+    lr_recalls.append(recall_score(y_val, preds))
+    lr_f1s.append(f1_score(y_val, preds))
 
-print("CV mean accuracy:", np.mean(scores))
-print('CV standard deviation', np.std(scores))
 
-# split
+print("Logistic Regression Cross Validation Accuracy:", np.mean(lr_accuracies))
+print("Logistic Regression Cross Validation Precision:", np.mean(lr_precisions))
+print("Logistic Regression Cross Validation Recall:", np.mean(lr_recalls))
+print("Logistic Regression Cross Validation F1:", np.mean(lr_f1s))
+
+# Train/test split
 split_idx = int(len(X) * 0.8)
 X_train = X.iloc[:split_idx]
 X_test  = X.iloc[split_idx:]
@@ -178,15 +189,12 @@ model.fit(X_train_scaled, y_train)
 
 # evaluate on TRUE test set
 preds = model.predict(X_test_scaled)
-score = accuracy_score(y_test, preds)
 
-print("Final test accuracy:", score)
-print(accuracy_score(y_test, preds))
-print(precision_score(y_test, preds, average='binary'))
-print(recall_score(y_test, preds, average='binary'))
-print(f1_score(y_test, preds, average='binary'))
-
-print(classification_report(y_test, preds))
+print('Logistic Regression Final test accuracy:', accuracy_score(y_test, preds))
+print('Logistic Regression Final test precision :', precision_score(y_test, preds, average='binary'))
+print('Logistic Regression Final test recall', recall_score(y_test, preds, average='binary'))
+print('Logistic Regression Final test f-1 score', f1_score(y_test, preds, average='binary'))
+print('Logistic Regression Classification Report', classification_report(y_test, preds))
 
 # print("CV Accuracy:", np.mean(accuracies))
 # print("CV Precision:", np.mean(precisions))
@@ -210,7 +218,11 @@ print(classification_report(y_test, preds))
 # =========================
 # DECISION TREE
 # =========================
-dt_scores = []
+
+dt_precisions = []
+dt_recalls = []
+dt_f1s = []
+dt_accuracies = []
 for train_idx, test_idx in tscv.split(X):
 
     X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
@@ -221,9 +233,15 @@ for train_idx, test_idx in tscv.split(X):
     dt.fit(X_train, y_train)
 
     preds = dt.predict(X_val)
-    dt_scores.append(accuracy_score(y_val, preds))
+    dt_accuracies.append(accuracy_score(y_val, preds))
+    dt_precisions.append(accuracy_score(y_val, preds))
+    dt_recalls.append(accuracy_score(y_val, preds))
+    dt_f1s.append(accuracy_score(y_val, preds))
 
-print("Decision Tree CV accuracy:", np.mean(dt_scores))
+print("Decision Tree CV Accuracy:", np.mean(dt_accuracies))
+print("Decision Tree CV Precision:", np.mean(dt_precisions))
+print("Decision Tree CV Recall:", np.mean(dt_recalls))
+print("Decision Tree CV F1:", np.mean(dt_f1s))
 
 # scale (fit ONLY on train)
 X_train_scaled = scaler.fit_transform(X_train)
@@ -235,16 +253,13 @@ model.fit(X_train_scaled, y_train)
 
 # evaluate on TRUE test set
 preds = model.predict(X_test_scaled)
-score = accuracy_score(y_test, preds)
 
-print("Final test accuracy:", score)
 
-print(accuracy_score(y_test, preds))
-print(precision_score(y_test, preds, average='binary'))
-print(recall_score(y_test, preds, average='binary'))
-print(f1_score(y_test, preds, average='binary'))
-
-print(classification_report(y_test, preds))
+print('Decision Tree Final test accuracy:', accuracy_score(y_test, preds))
+print('Decision Tree Final test precision:', precision_score(y_test, preds, average='binary'))
+print('Decision Tree Final test recall:', recall_score(y_test, preds, average='binary'))
+print('Decision Tree Final test f1-score:', f1_score(y_test, preds, average='binary'))
+print('Decision Tree Classification report:', classification_report(y_test, preds))
 
 # decision tree classifier
 # dt_model = DecisionTreeClassifier()
@@ -255,7 +270,10 @@ print(classification_report(y_test, preds))
 # KNN
 # =========================
 
-knn_scores = []
+knn_precisions = []
+knn_recalls = []
+knn_f1s = []
+knn_accuracies = []
 
 for train_idx, test_idx in tscv.split(X):
 
@@ -270,10 +288,17 @@ for train_idx, test_idx in tscv.split(X):
     knn = KNeighborsClassifier(n_neighbors=5)
     knn.fit(X_train_scaled, y_train)
 
+    # Evaluation across folds 
     preds = knn.predict(X_val_scaled)
-    knn_scores.append(accuracy_score(y_val, preds))
+    knn_accuracies.append(accuracy_score(y_val, preds))
+    knn_precisions.append(accuracy_score(y_val, preds))
+    knn_f1s.append(accuracy_score(y_val, preds))
+    knn_recalls.append(accuracy_score(y_val, preds))
 
-print("KNN CV accuracy:", np.mean(knn_scores))
+print("KNN CV Accuracy:", np.mean(dt_accuracies))
+print("KNN CV Precision:", np.mean(dt_precisions))
+print("KNN CV Recall:", np.mean(dt_recalls))
+print("KNN CV F1:", np.mean(dt_f1s))
 
 
 # scale (fit ONLY on train)
@@ -287,14 +312,11 @@ model.fit(X_train_scaled, y_train)
 
 # evaluate on TRUE test set
 preds = model.predict(X_test_scaled)
-score = accuracy_score(y_test, preds)
 
-print("Final test accuracy:", score)
-
-print(accuracy_score(y_test, preds))
-print(precision_score(y_test, preds, average='binary'))
-print(recall_score(y_test, preds, average='binary'))
-print(f1_score(y_test, preds, average='binary'))
+print('KNN Final test accuracy:',accuracy_score(y_test, preds))
+print('KNN Final test precision:', precision_score(y_test, preds, average='binary'))
+print('KNN Final test recall:', recall_score(y_test, preds, average='binary'))
+print('KNN Final test f1-score:', f1_score(y_test, preds, average='binary'))
 
 print(classification_report(y_test, preds))
 
@@ -320,7 +342,10 @@ print(classification_report(y_test, preds))
 
 # build the model 
 
-nn_scores = []
+nn_accuracies = []
+nn_precisions = []
+nn_recalls = []
+nn_f1s = []
 
 for train_idx, test_idx in tscv.split(X):
 
@@ -339,7 +364,7 @@ for train_idx, test_idx in tscv.split(X):
     ])
 
     model1.compile(
-        optimizer='adam'(learning_rate=0.001),
+        optimizer=Adam(learning_rate=0.001),
         loss='binary_crossentropy',
         metrics=['accuracy']
     )
@@ -350,19 +375,24 @@ for train_idx, test_idx in tscv.split(X):
         y_train,
         epochs=20,
         batch_size=16,
-        verbose=0
+        # verbose=0
     )
 
     # predict probabilities
-    probs = model.predict(X_val_scaled, verbose=0)
+    probs = model1.predict(X_val_scaled)
 
     # convert probabilities to 0/1
     preds = (probs > 0.5).astype(int).flatten()
 
-    preds = model1.predict(X_val_scaled)
-    nn_scores.append(accuracy_score(y_val, preds))
+    nn_accuracies.append(accuracy_score(y_val, preds))
+    nn_precisions.append(accuracy_score(y_val, preds))
+    nn_recalls.append(accuracy_score(y_val, preds))
+    nn_f1s.append(accuracy_score(y_val, preds))
 
-print("NN CV accuracy:", np.mean(nn_scores))
+print("Feed forward neural network CV Accuracy:", np.mean(nn_accuracies))
+print("Feed forward neural network CV Precision:", np.mean(nn_precisions))
+print("Feed forward neural network CV Recall:", np.mean(nn_recalls))
+print("Feed forward neural network CV F1:", np.mean(nn_f1s))
 
 # build a second model 
 
@@ -373,7 +403,7 @@ model2 = Sequential([
     ])
 
 model2.compile(
-        optimizer='adam'(learning_rate=0.001), #i could increase the learning rate
+        optimizer=Adam(learning_rate=0.001), #i could increase the learning rate
         loss='binary_crossentropy',
         metrics=['accuracy']
     )
@@ -382,19 +412,18 @@ model2.fit(
         y_train,
         epochs=20,
         batch_size=16,
-        verbose=0
+        # verbose=0
     )
 
-probs = model2.predict(X_val_scaled, verbose=0)
+probs = model2.predict(X_val_scaled)
 
 preds = (probs > 0.5).astype(int)
 
-print(accuracy_score(y_test, preds))
-print(precision_score(y_test, preds, average='binary'))
-print(recall_score(y_test, preds, average='binary'))
-print(f1_score(y_test, preds, average='binary'))
-
-print(classification_report(y_test, preds))
+print('Feed forward neural network Final test accuracy:', accuracy_score(y_test, preds))
+print('Feed forward neural network Final test precision :', precision_score(y_test, preds, average='binary'))
+print('Feed forward neural network Final test recall', recall_score(y_test, preds, average='binary'))
+print('Feed forward neural network Final test f-1 score', f1_score(y_test, preds, average='binary'))
+print('Feed forward neural network Classification Report', classification_report(y_test, preds))
 
 # evaluation: 5-fold cross validation, f-1 score, accuracy, precision, recall, confusion matrix
 
