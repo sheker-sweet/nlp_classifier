@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 # Machine Learning
-from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score #we are using timeseriessplit instead of random split to prevent from future data leaking which might result in fake accuracy 
+from sklearn.model_selection import  TimeSeriesSplit #we are using timeseriessplit instead of random split to prevent from future data leaking which might result in fake accuracy 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 # from sklearn.feature_extraction.text import TfidfVectorizer
@@ -17,14 +17,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score, classification_report, ConfusionMatrixDisplay
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Input
 from tensorflow.keras.optimizers import Adam
 
 # Sentiment analysis
 import nltk
-from nltk.corpus import words
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from nltk.tokenize import word_tokenize
+
 
 nltk.download('words', quiet = True) 
 nltk.download('punkt', quiet = True)
@@ -36,6 +35,7 @@ analyzer = SentimentIntensityAnalyzer()
 tweets = pd.read_csv('stock_tweets.csv')
 spy = pd.read_csv('spy_prices.csv')
 prices = spy.copy() # not sure if I need to make a copy here or not
+
 
 # ===============================
 # DATA PRE-PROCESSING FOR TWEETS:
@@ -158,8 +158,8 @@ for train_idx, test_idx in tscv.split(X):
 
 
 
-print('*' * 50)
-print(' '* 50)
+print('*' * 100)
+print(' '* 100)
 print("Logistic Regression Cross Validation Accuracy:", np.mean(lr_accuracies))
 print("Logistic Regression Cross Validation Precision:", np.mean(lr_precisions))
 print("Logistic Regression Cross Validation Recall:", np.mean(lr_recalls))
@@ -203,13 +203,21 @@ model.fit(X_train_scaled, y_train)
 # evaluate on TRUE test set
 preds = model.predict(X_test_scaled)
 
-print('*' * 50)
-print(' '* 50)
-print('Logistic Regression Final test accuracy:', accuracy_score(y_test, preds))
-print('Logistic Regression Final test precision :', precision_score(y_test, preds, average='binary'))
-print('Logistic Regression Final test recall', recall_score(y_test, preds, average='binary'))
-print('Logistic Regression Final test f-1 score', f1_score(y_test, preds, average='binary'))
-print('Logistic Regression Classification Report:', '\n'*2, classification_report(y_test, preds))
+print('*' * 100)
+print(' '* 100)
+
+lr_final_acc = accuracy_score(y_test, preds)
+lr_final_prec = precision_score(y_test, preds, average='binary')
+lr_final_recall = recall_score(y_test, preds,average='binary' )
+lr_final_f1 = f1_score(y_test, preds, average='binary')
+
+print('Logistic Regression Final test accuracy:', lr_final_acc)
+print('Logistic Regression Final test precision :', lr_final_prec)
+print('Logistic Regression Final test recall', lr_final_recall)
+print('Logistic Regression Final test f-1 score', lr_final_f1 )
+print('*' * 100 )
+print(' '* 100)
+print('Logistic Regression Classification Report:', '\n'*2, )
 
 cm_lr = confusion_matrix(y_test, preds)
 print(cm_lr)
@@ -252,8 +260,8 @@ for train_idx, test_idx in tscv.split(X):
 
 
 
-print('*' * 50 )
-print(' '* 50)
+print('*' * 100 )
+print(' '* 100)
 print("Decision Tree Cross Validation Accuracy:", np.mean(dt_accuracies))
 print("Decision Tree Cross Validation Precision:", np.mean(dt_precisions))
 print("Decision Tree Cross Validation Recall:", np.mean(dt_recalls))
@@ -289,12 +297,20 @@ model.fit(X_train_scaled, y_train)
 # evaluate on TRUE test set
 preds = model.predict(X_test_scaled)
 
-print('*' * 50)
-print(' '* 50)
-print('Decision Tree Final test accuracy:', accuracy_score(y_test, preds))
-print('Decision Tree Final test precision:', precision_score(y_test, preds, average='binary'))
-print('Decision Tree Final test recall:', recall_score(y_test, preds, average='binary'))
-print('Decision Tree Final test f1-score:', f1_score(y_test, preds, average='binary'))
+print('*' * 100)
+print(' '* 100)
+
+dt_final_acc = accuracy_score(y_test, preds)
+dt_final_prec = precision_score(y_test, preds, average='binary')
+dt_final_recall = recall_score(y_test, preds,average='binary' )
+dt_final_f1 = f1_score(y_test, preds, average='binary')
+
+print('Decision Tree Final test accuracy:', dt_final_acc)
+print('Decision Tree Final test precision:', dt_final_prec)
+print('Decision Tree Final test recall:', dt_final_recall)
+print('Decision Tree Final test f1-score:', dt_final_f1)
+print('*' * 100 )
+print(' '* 100)
 print('Decision Tree Classification report:', '\n'*2, classification_report(y_test, preds))
 
 cm_dt = confusion_matrix(y_test, preds)
@@ -338,8 +354,8 @@ for train_idx, test_idx in tscv.split(X):
     knn_recalls.append(recall_score(y_val, preds))
 
 
-print('*' * 50 )
-print(' '* 50)
+print('*' * 100 )
+print(' '* 100)
 print("KNN Cross Validation Accuracy:", np.mean(knn_accuracies))
 print("KNN Cross Validation Precision:", np.mean(knn_precisions))
 print("KNN Cross Validation Recall:", np.mean(knn_recalls))
@@ -376,12 +392,19 @@ model.fit(X_train_scaled, y_train)
 # evaluate on TRUE test set
 preds = model.predict(X_test_scaled)
 
-print('*'* 50)
-print(' '* 50)
-print('KNN Final test accuracy:',accuracy_score(y_test, preds))
-print('KNN Final test precision:', precision_score(y_test, preds, average='binary'))
-print('KNN Final test recall:', recall_score(y_test, preds, average='binary'))
-print('KNN Final test f1-score:', f1_score(y_test, preds, average='binary'))
+print('*'* 100)
+print(' '* 100)
+knn_final_acc = accuracy_score(y_test, preds)
+knn_final_prec = precision_score(y_test, preds, average='binary')
+knn_final_recall = recall_score(y_test, preds,average='binary' )
+knn_final_f1 = f1_score(y_test, preds, average='binary')
+
+print('KNN Final test accuracy:', knn_final_acc)
+print('KNN Final test precision:',knn_final_prec)
+print('KNN Final test recall:', knn_final_recall)
+print('KNN Final test f1-score:', knn_final_f1)
+print('*' * 100 )
+print(' '* 100)
 print('KNN Final classification report:', '\n'*2, classification_report(y_test, preds))
 
 
@@ -418,7 +441,8 @@ for train_idx, test_idx in tscv.split(X):
 
     # BUILD FRESH MODEL EACH FOLD
     model1 = Sequential([
-        Dense(32, activation='relu', input_shape=(X_train_scaled.shape[1],)),
+        Input(shape=(X_train_scaled.shape[1],)),
+        Dense(32, activation='relu'),
         Dense(16, activation='relu'),
         Dense(1, activation='sigmoid')
     ])
@@ -439,7 +463,7 @@ for train_idx, test_idx in tscv.split(X):
     )
 
     # predict probabilities
-    probs = model1.predict(X_val_scaled)
+    probs = model1.predict(np.array(X_val_scaled), verbose=0)
 
     # convert probabilities to 0/1
     preds = (probs > 0.5).astype(int).flatten()
@@ -449,8 +473,8 @@ for train_idx, test_idx in tscv.split(X):
     nn_recalls.append(recall_score(y_val, preds))
     nn_f1s.append(f1_score(y_val, preds))
 
-print('*' * 50 )
-print(' '* 50)
+print('*' * 100 )
+print(' '* 100)
 print("Feed forward neural network CV Accuracy:", np.mean(nn_accuracies))
 print("Feed forward neural network CV Precision:", np.mean(nn_precisions))
 print("Feed forward neural network CV Recall:", np.mean(nn_recalls))
@@ -478,7 +502,8 @@ plt.show()
 # build a second model 
 
 model2 = Sequential([
-        Dense(32, activation='relu', input_shape=(X_train_scaled.shape[1],)),
+        Input(shape=(X_train_scaled.shape[1],)),
+        Dense(32, activation='relu'),
         Dense(16, activation='relu'),
         Dense(1, activation='sigmoid')
     ])
@@ -496,16 +521,23 @@ model2.fit(
         # verbose=0
     )
 
-probs = model2.predict(X_test_scaled)
+probs = model2.predict(np.array(X_test_scaled), verbose=0)
 
 preds = (probs > 0.5).astype(int)
 
-print('*' * 50 )
-print(' '* 50)
-print('Feed forward neural network Final test accuracy:', accuracy_score(y_test, preds))
-print('Feed forward neural network Final test precision :', precision_score(y_test, preds, average='binary'))
-print('Feed forward neural network Final test recall', recall_score(y_test, preds, average='binary'))
-print('Feed forward neural network Final test f-1 score', f1_score(y_test, preds, average='binary'))
+print('*' * 100 )
+print(' '* 100)
+nn_final_acc = accuracy_score(y_test, preds)
+nn_final_prec = precision_score(y_test, preds, average='binary')
+nn_final_recall = recall_score(y_test, preds,average='binary' )
+nn_final_f1 = f1_score(y_test, preds, average='binary')
+
+print('Feed forward neural network Final test accuracy:', nn_final_acc)
+print('Feed forward neural network Final test precision:', nn_final_prec)
+print('Feed forward neural network Final test recal:', nn_final_recall)
+print('Feed forward neural network Final test f-1 score', nn_final_f1)
+print('*' * 100 )
+print(' '* 100)
 print('Feed forward neural network Classification Report:', '\n'*2, classification_report(y_test, preds))
 
 cm_nn = confusion_matrix(y_test, preds)
@@ -519,6 +551,106 @@ plt.title("NN Confusion Matrix")
 plt.show()
 
 
+
+# =========================
+# EVALUATION ACCROSS MODELS 
+# =========================
+
+# CROSS VALIDATION VALUES 
+cv_results = pd.DataFrame({
+    'Model': ['Logistic Regression', 'KNN', 'Decision Tree', 'Neural Network'],
+    
+    'CV Accuracy': [
+        np.mean(lr_accuracies),
+        np.mean(knn_accuracies),
+        np.mean(dt_accuracies),
+        np.mean(nn_accuracies)
+    ],
+
+    'CV Precision': [
+        np.mean(lr_precisions),
+        np.mean(knn_precisions),
+        np.mean(dt_precisions),
+        np.mean(nn_precisions)
+    ],
+
+    'CV Recall': [
+        np.mean(lr_recalls),
+        np.mean(knn_recalls),
+        np.mean(dt_recalls),
+        np.mean(nn_recalls)
+    ],
+
+    'CV F1': [
+        np.mean(lr_f1s),
+        np.mean(knn_f1s),
+        np.mean(dt_f1s),
+        np.mean(nn_f1s)
+    ]
+})
+
+print('*' * 100 )
+print(' '* 100)
+print(cv_results)
+
+# FINAL VALUES 
+
+final_results = pd.DataFrame({
+    'Model': ['LR', 'KNN', 'DT', 'NN'],
+    'Accuracy': [lr_final_acc, knn_final_acc, dt_final_acc, nn_final_acc],
+    'Precision': [lr_final_prec, knn_final_prec, dt_final_prec, nn_final_prec],
+    'Recall': [lr_final_recall, knn_final_recall, dt_final_recall, nn_final_recall],
+    'F1': [lr_final_f1, knn_final_f1, dt_final_f1, nn_final_f1]
+})
+
+print('*' * 100 )
+print(' '* 100)
+print(final_results.round(3))
+
+# PLOT CROSS VALIDATION RESULTS
+cv_results.plot(
+    x='Model',
+    y=['CV Accuracy', 'CV Precision', 'CV Recall', 'CV F1'],
+    kind='bar',
+    figsize=(10,6)
+)
+
+plt.title('Cross-Validation Metrics by Model')
+plt.ylabel('Score')
+plt.xlabel('Model')
+
+plt.ylim(0,1)
+
+plt.xticks(rotation=0)
+
+plt.legend(loc='lower right')
+
+plt.tight_layout()
+
+plt.show()
+
+# PLOT FINAL VALUES 
+
+final_results.plot(
+    x='Model',
+    y=['Accuracy', 'Precision', 'Recall', 'F1'],
+    kind='bar',
+    figsize=(10,6)
+)
+
+plt.title('Final Test Metrics by Model')
+plt.ylabel('Score')
+plt.xlabel('Model')
+
+plt.ylim(0,1)
+
+plt.xticks(rotation=0)
+
+plt.legend(loc='lower right')
+
+plt.tight_layout()
+
+plt.show()
 
 
 
