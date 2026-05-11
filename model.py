@@ -7,12 +7,10 @@ import emoji
 # Plotting
 import matplotlib.pyplot as plt
 
-
 # Machine Learning
-from sklearn.model_selection import  TimeSeriesSplit #we are using timeseriessplit instead of random split to prevent from future data leaking which might result in fake accuracy 
+from sklearn.model_selection import  TimeSeriesSplit 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
-# from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score, classification_report, ConfusionMatrixDisplay
@@ -34,7 +32,8 @@ analyzer = SentimentIntensityAnalyzer()
 #import the data 
 tweets = pd.read_csv('stock_tweets.csv')
 spy = pd.read_csv('spy_prices.csv')
-prices = spy.copy() # not sure if I need to make a copy here or not
+prices = spy.copy() 
+
 
 
 # ===============================
@@ -80,10 +79,11 @@ daily_sentiment = tweets.groupby('Date').agg(
    tweet_count   = ('compound', 'count')
 ).reset_index()
 
+#=================================
 # TEST FOR PRE-PROCESSED TWEETS
-# print("TWEETS:")
-# print(daily_sentiment.head(10))
-# print(f"Sentiment range: {daily_sentiment['avg_sentiment'].min():.2f} to {daily_sentiment['avg_sentiment'].max():.2f}")
+print("TWEETS:")
+print(daily_sentiment.head(10))
+print(f"Sentiment range: {daily_sentiment['avg_sentiment'].min():.2f} to {daily_sentiment['avg_sentiment'].max():.2f}")
 
 # ================================
 # PRE-PROCESSING STEPS FOR PRICES:
@@ -102,11 +102,11 @@ prices.sort_values('Date', inplace=True)
 prices['direction'] = (prices['Close'].shift(-1) > prices['Close']).astype(int)
 prices = prices.iloc[:-1].copy()  # drop last row (no next-day label)
 
-#===============================================================
+#================================
 # TEST FOR PRE-PROCESSED PRICES
-# print("\nPRICES:")
-# print(prices[['Date', 'Close', 'direction']].head(10))
-# print(f"Direction counts (0=down, 1=up):\n{prices['direction'].value_counts()}")
+print("\nPRICES:")
+print(prices[['Date', 'Close', 'direction']].head(10))
+print(f"Direction counts (0=down, 1=up):\n{prices['direction'].value_counts()}")
 
 # MERGING DATASETS:
 merged = pd.merge(daily_sentiment, prices[['Date', 'direction']], on='Date', how='inner')
@@ -116,18 +116,59 @@ merged.reset_index(drop=True, inplace=True)
 
 
 # SELECTING FEATURES AND TARGET VARIABLES
-# select the features and target variables from the csv files 
 X = merged[['avg_sentiment', 'avg_positive', 'avg_negative', 'avg_neutral', 'tweet_count']]
 y = merged['direction']
+
+# ================================
+# DATASET QUALITY CHECK:
+# ================================
+# run this test if not sure how good your dataset is
+
+# CHECKING FOR THE BALANCE OF THE CLASSES IN TARGET VARIABLE
+
+# print(y.value_counts())
+# print(y.value_counts(normalize=True))
+
+# # CHECKING FOR A CORRELATION BETWEEN SENTIMENT AND PRICE DIRECTION
+
+# print(merged[['avg_sentiment', 'direction']].corr())
+
+
+# print("=" * 50)
+# print("DATASET QUALITY REPORT")
+# print("=" * 50)
+
+# print(f"\nTWEETS:")
+# print(f"  Total rows:        {len(tweets)}")
+# print(f"  Date range:        {tweets['Date'].min()} → {tweets['Date'].max()}")
+# print(f"  Unique dates:      {tweets['Date'].nunique()}")
+# print(f"  Avg tweets/day:    {len(tweets) / tweets['Date'].nunique():.0f}")
+# print(f"  Missing values:    {tweets.isnull().sum().sum()}")
+
+# print(f"\nPRICES:")
+# print(f"  Total rows:        {len(prices)}")
+# print(f"  Date range:        {prices['Date'].min()} → {prices['Date'].max()}")
+# print(f"  Unique dates:      {prices['Date'].nunique()}")
+# print(f"  Missing values:    {prices.isnull().sum().sum()}")
+
+# print(f"\nAFTER MERGE:")
+# print(f"  Total rows:        {len(merged)}")
+# print(f"  Date range:        {merged['Date'].min()} → {merged['Date'].max()}")
+# print(f"  Class balance:     {merged['direction'].value_counts(normalize=True).to_dict()}")
+
+# print(f"\nSENTIMENT DISTRIBUTION:")
+# print(f"  Mean:              {merged['avg_sentiment'].mean():.4f}")
+# print(f"  Std:               {merged['avg_sentiment'].std():.4f}")
+# print(f"  Min:               {merged['avg_sentiment'].min():.4f}")
+# print(f"  Max:               {merged['avg_sentiment'].max():.4f}")
 
 
 # =========================
 # LOGISTIC REGRESSION
 # =========================
+
 scaler = StandardScaler()
 tscv = TimeSeriesSplit(n_splits=5)
-
-
 
 lr_precisions = []
 lr_recalls = []
@@ -156,8 +197,8 @@ for train_idx, test_idx in tscv.split(X):
     lr_recalls.append(recall_score(y_val, preds))
     lr_f1s.append(f1_score(y_val, preds))
 
-
-
+# CV FOR LR
+#===========================================================================
 print('*' * 100)
 print(' '* 100)
 print("Logistic Regression Cross Validation Accuracy:", np.mean(lr_accuracies))
@@ -192,7 +233,7 @@ X_test  = X.iloc[split_idx:]
 y_train = y.iloc[:split_idx]
 y_test  = y.iloc[split_idx:]
 
-# scale (fit ONLY on train)
+# scale 
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
@@ -200,7 +241,7 @@ X_test_scaled = scaler.transform(X_test)
 model = LogisticRegression(random_state=0, max_iter=1000)
 model.fit(X_train_scaled, y_train)
 
-# evaluate on TRUE test set
+# evaluate on test set
 preds = model.predict(X_test_scaled)
 
 print('*' * 100)
@@ -210,6 +251,9 @@ lr_final_acc = accuracy_score(y_test, preds)
 lr_final_prec = precision_score(y_test, preds, average='binary')
 lr_final_recall = recall_score(y_test, preds,average='binary' )
 lr_final_f1 = f1_score(y_test, preds, average='binary')
+
+# FINAL TEST FOR LR
+#===========================================================================
 
 print('Logistic Regression Final test accuracy:', lr_final_acc)
 print('Logistic Regression Final test precision :', lr_final_prec)
@@ -258,7 +302,8 @@ for train_idx, test_idx in tscv.split(X):
     dt_recalls.append(recall_score(y_val, preds))
     dt_f1s.append(f1_score(y_val, preds))
 
-
+# CV FOR DT
+#===========================================================================
 
 print('*' * 100 )
 print(' '* 100)
@@ -294,7 +339,7 @@ plt.show()
 model = DecisionTreeClassifier(random_state=0)
 model.fit(X_train, y_train)
 
-# evaluate on TRUE test set
+# evaluate on test set
 preds = model.predict(X_test)
 
 print('*' * 100)
@@ -304,6 +349,10 @@ dt_final_acc = accuracy_score(y_test, preds)
 dt_final_prec = precision_score(y_test, preds, average='binary')
 dt_final_recall = recall_score(y_test, preds,average='binary' )
 dt_final_f1 = f1_score(y_test, preds, average='binary')
+
+# FINAL TEST FOR DT
+#===========================================================================
+
 
 print('Decision Tree Final test accuracy:', dt_final_acc)
 print('Decision Tree Final test precision:', dt_final_prec)
@@ -354,6 +403,8 @@ for train_idx, test_idx in tscv.split(X):
     knn_recalls.append(recall_score(y_val, preds))
 
 
+# CV FOR KNN
+#===========================================================================
 print('*' * 100 )
 print(' '* 100)
 print("KNN Cross Validation Accuracy:", np.mean(knn_accuracies))
@@ -389,7 +440,7 @@ X_test_scaled = scaler.transform(X_test)
 model = KNeighborsClassifier(n_neighbors=15)
 model.fit(X_train_scaled, y_train)
 
-# evaluate on TRUE test set
+# evaluate on test set
 preds = model.predict(X_test_scaled)
 
 print('*'* 100)
@@ -399,6 +450,8 @@ knn_final_prec = precision_score(y_test, preds, average='binary')
 knn_final_recall = recall_score(y_test, preds,average='binary' )
 knn_final_f1 = f1_score(y_test, preds, average='binary')
 
+# FINAL TEST FOR KNN
+#===========================================================================
 print('KNN Final test accuracy:', knn_final_acc)
 print('KNN Final test precision:',knn_final_prec)
 print('KNN Final test recall:', knn_final_recall)
@@ -473,6 +526,9 @@ for train_idx, test_idx in tscv.split(X):
     nn_recalls.append(recall_score(y_val, preds))
     nn_f1s.append(f1_score(y_val, preds))
 
+
+# CV FOR NN
+#===========================================================================
 print('*' * 100 )
 print(' '* 100)
 print("Feed forward neural network CV Accuracy:", np.mean(nn_accuracies))
@@ -532,6 +588,8 @@ nn_final_prec = precision_score(y_test, preds, average='binary')
 nn_final_recall = recall_score(y_test, preds,average='binary' )
 nn_final_f1 = f1_score(y_test, preds, average='binary')
 
+# FINAL TEST FOR NN
+#===========================================================================
 print('Feed forward neural network Final test accuracy:', nn_final_acc)
 print('Feed forward neural network Final test precision:', nn_final_prec)
 print('Feed forward neural network Final test recal:', nn_final_recall)
@@ -629,7 +687,7 @@ plt.tight_layout()
 
 plt.show()
 
-# PLOT FINAL VALUES 
+# PLOT FINAL TEST VALUES 
 
 final_results.plot(
     x='Model',
