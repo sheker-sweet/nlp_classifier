@@ -286,16 +286,16 @@ plt.grid(True)
 
 plt.show()
 
-# scale (fit ONLY on train)
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+# # scale (fit ONLY on train)
+# X_train_scaled = scaler.fit_transform(X_train)
+# X_test_scaled = scaler.transform(X_test)
 
 # model
 model = DecisionTreeClassifier(random_state=0)
-model.fit(X_train_scaled, y_train)
+model.fit(X_train, y_train)
 
 # evaluate on TRUE test set
-preds = model.predict(X_test_scaled)
+preds = model.predict(X_test)
 
 print('*' * 100)
 print(' '* 100)
@@ -386,7 +386,7 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 # model
-model = KNeighborsClassifier(n_neighbors=5)
+model = KNeighborsClassifier(n_neighbors=15)
 model.fit(X_train_scaled, y_train)
 
 # evaluate on TRUE test set
