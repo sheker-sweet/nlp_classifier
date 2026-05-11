@@ -178,24 +178,24 @@ lr_accuracies = []
 for train_idx, test_idx in tscv.split(X):
 
     # split data
-    X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
-    y_train, y_val = y.iloc[train_idx], y.iloc[test_idx]
+    X_tr, X_va = X.iloc[train_idx], X.iloc[test_idx]
+    y_tr, y_va = y.iloc[train_idx], y.iloc[test_idx]
 
     # scale (fit ONLY on train fold)
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_val_scaled = scaler.transform(X_val)
+    X_train_scaled = scaler.fit_transform(X_tr)
+    X_val_scaled = scaler.transform(X_va)
 
     # model
     model = LogisticRegression(random_state=0, max_iter=1000)
-    model.fit(X_train_scaled, y_train)
+    model.fit(X_train_scaled, y_tr)
 
     # evaluate
     preds = model.predict(X_val_scaled)
 
-    lr_accuracies.append(accuracy_score(y_val, preds))
-    lr_precisions.append(precision_score(y_val, preds))
-    lr_recalls.append(recall_score(y_val, preds))
-    lr_f1s.append(f1_score(y_val, preds))
+    lr_accuracies.append(accuracy_score(y_va, preds))
+    lr_precisions.append(precision_score(y_va, preds))
+    lr_recalls.append(recall_score(y_va, preds))
+    lr_f1s.append(f1_score(y_va, preds))
 
 # CV FOR LR
 #===========================================================================
@@ -289,18 +289,18 @@ dt_f1s = []
 dt_accuracies = []
 for train_idx, test_idx in tscv.split(X):
 
-    X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
-    y_train, y_val = y.iloc[train_idx], y.iloc[test_idx]
+    X_tr, X_va = X.iloc[train_idx], X.iloc[test_idx]
+    y_tr, y_va = y.iloc[train_idx], y.iloc[test_idx]
 
     # NO SCALING needed
     dt = DecisionTreeClassifier(random_state=0)
-    dt.fit(X_train, y_train)
+    dt.fit(X_tr, y_tr)
 
-    preds = dt.predict(X_val)
-    dt_accuracies.append(accuracy_score(y_val, preds))
-    dt_precisions.append(precision_score(y_val, preds))
-    dt_recalls.append(recall_score(y_val, preds))
-    dt_f1s.append(f1_score(y_val, preds))
+    preds = dt.predict(X_va)
+    dt_accuracies.append(accuracy_score(y_va, preds))
+    dt_precisions.append(precision_score(y_va, preds))
+    dt_recalls.append(recall_score(y_va, preds))
+    dt_f1s.append(f1_score(y_va, preds))
 
 # CV FOR DT
 #===========================================================================
@@ -384,23 +384,23 @@ knn_accuracies = []
 
 for train_idx, test_idx in tscv.split(X):
 
-    X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
-    y_train, y_val = y.iloc[train_idx], y.iloc[test_idx]
+    X_tr, X_va = X.iloc[train_idx], X.iloc[test_idx]
+    y_tr, y_va = y.iloc[train_idx], y.iloc[test_idx]
 
     # SCALE (critical for KNN)
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_val_scaled = scaler.transform(X_val)
+    X_train_scaled = scaler.fit_transform(X_tr)
+    X_val_scaled = scaler.transform(X_va)
 
     # KNN model
     knn = KNeighborsClassifier(n_neighbors=15)
-    knn.fit(X_train_scaled, y_train)
+    knn.fit(X_train_scaled, y_tr)
 
     # Evaluation across folds 
     preds = knn.predict(X_val_scaled)
-    knn_accuracies.append(accuracy_score(y_val, preds))
-    knn_precisions.append(precision_score(y_val, preds))
-    knn_f1s.append(f1_score(y_val, preds))
-    knn_recalls.append(recall_score(y_val, preds))
+    knn_accuracies.append(accuracy_score(y_va, preds))
+    knn_precisions.append(precision_score(y_va, preds))
+    knn_f1s.append(f1_score(y_va, preds))
+    knn_recalls.append(recall_score(y_va, preds))
 
 
 # CV FOR KNN
@@ -485,12 +485,12 @@ nn_f1s = []
 
 for train_idx, test_idx in tscv.split(X):
 
-    X_train, X_val = X.iloc[train_idx], X.iloc[test_idx]
-    y_train, y_val = y.iloc[train_idx], y.iloc[test_idx]
+    X_tr, X_va = X.iloc[train_idx], X.iloc[test_idx]
+    y_tr, y_va = y.iloc[train_idx], y.iloc[test_idx]
 
     # SCALE (critical for KNN)
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_val_scaled = scaler.transform(X_val)
+    X_train_scaled = scaler.fit_transform(X_tr)
+    X_val_scaled = scaler.transform(X_va)
 
     # BUILD FRESH MODEL EACH FOLD
     model1 = Sequential([
@@ -509,10 +509,10 @@ for train_idx, test_idx in tscv.split(X):
     # train
     model1.fit(
         X_train_scaled,
-        y_train,
+        y_tr,
         epochs=20,
         batch_size=16,
-        # verbose=0
+        verbose=0
     )
 
     # predict probabilities
@@ -521,10 +521,10 @@ for train_idx, test_idx in tscv.split(X):
     # convert probabilities to 0/1
     preds = (probs > 0.5).astype(int).flatten()
 
-    nn_accuracies.append(accuracy_score(y_val, preds))
-    nn_precisions.append(precision_score(y_val, preds))
-    nn_recalls.append(recall_score(y_val, preds))
-    nn_f1s.append(f1_score(y_val, preds))
+    nn_accuracies.append(accuracy_score(y_va, preds))
+    nn_precisions.append(precision_score(y_va, preds))
+    nn_recalls.append(recall_score(y_va, preds))
+    nn_f1s.append(f1_score(y_va, preds))
 
 
 # CV FOR NN
@@ -556,7 +556,9 @@ plt.grid(True)
 plt.show()
 
 # build a second model 
-
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+ 
 model2 = Sequential([
         Input(shape=(X_train_scaled.shape[1],)),
         Dense(32, activation='relu'),
@@ -574,12 +576,12 @@ model2.fit(
         y_train,
         epochs=20,
         batch_size=16,
-        # verbose=0
+        verbose=0
     )
 
 probs = model2.predict(np.array(X_test_scaled), verbose=0)
 
-preds = (probs > 0.5).astype(int)
+preds = (probs > 0.5).astype(int).flatten()
 
 print('*' * 100 )
 print(' '* 100)
@@ -676,15 +678,10 @@ cv_results.plot(
 plt.title('Cross-Validation Metrics by Model')
 plt.ylabel('Score')
 plt.xlabel('Model')
-
 plt.ylim(0,1)
-
 plt.xticks(rotation=0)
-
 plt.legend(loc='lower right')
-
 plt.tight_layout()
-
 plt.show()
 
 # PLOT FINAL TEST VALUES 
@@ -699,15 +696,10 @@ final_results.plot(
 plt.title('Final Test Metrics by Model')
 plt.ylabel('Score')
 plt.xlabel('Model')
-
 plt.ylim(0,1)
-
 plt.xticks(rotation=0)
-
 plt.legend(loc='lower right')
-
 plt.tight_layout()
-
 plt.show()
 
 
